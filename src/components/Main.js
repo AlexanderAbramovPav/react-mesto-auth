@@ -1,21 +1,25 @@
 import {apiSettings} from '../utils/api.js'
-import React from 'react';
+import React, { useState, useEffect } from 'react'
 import Card from './Card';
 
 function Main(props) {
 
-    const [userInfo, setUserInfo] = React.useState({ userName: "", userDescription: "", userAvatar: "", cards: [] });
+    const [userInfo, setUserInfo] = useState({ userName: "", userDescription: "", userAvatar: ""});
+    const [userCards, setUserCards] = useState({cards: []});
 
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
             Promise.all([apiSettings.getUserInfo(), apiSettings.getInitialCards()])
-            .then(result => {
+            .then(([user, cards]) => {
                 setUserInfo({
                     ...userInfo,
-                    userName: result[0].name,
-                    userDescription: result[0].about,
-                    userAvatar: result[0].avatar,
-                    cards: result[1]
+                    userName: user.name,
+                    userDescription: user.about,
+                    userAvatar: user.avatar
+                  });
+                  setUserCards({
+                    ...userCards,
+                    cards: cards
                   });
             }) 
             .catch((err) => {
@@ -46,8 +50,8 @@ function Main(props) {
                 </section>
 
                 <section className="elements">
-                    {userInfo.cards.map((item) => (
-                        <Card key={item._id} cardItem={item} cardName={item.name} cardLink={item.link} cardLikes={item.likes.length} onCardClick={props.onCardClick}/>
+                    {userCards.cards.map((item) => (
+                        <Card key={item._id} item={item} name={item.name} link={item.link} likes={item.likes.length} onCardClick={props.onCardClick}/>
                     ))}
                 </section>
             </main>
