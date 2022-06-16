@@ -29,6 +29,9 @@
 
 @import url(./blocks/element/__title/element__title.css);
 @import url(./blocks/element/__trash-btn/element__trash-btn.css);
+@import url(./blocks/element/__trash-btn/_visible/element__trash-btn_visible.css);
+@import url(./blocks/element/__trash-btn/_hidden/element__trash-btn_hidden.css);
+
 
 @import url(./blocks/popup/popup.css);
 @import url(./blocks/popup/__container/popup__container.css);
