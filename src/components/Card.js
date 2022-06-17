@@ -36,22 +36,20 @@ function Card(props) {
     );; 
 
     return (
-        <>
-            <div className="element" >
-                <img
-                    className="element__image" style={{ backgroundImage: `url(${props.link})` }}
-                    onClick={handleCardClick}
-                />
-                <button className={cardDeleteButtonClassName} type="button" aria-label="Удалить карточку" onClick={handleDeleteClick}></button>
-                <div className="element__mesto-container">
-                    <h2 className="element__title">{props.name}</h2>
-                    <div className="element__like-container">
-                        <button className={cardLikeButtonClassName} type="button" aria-label="Поставить Лайк карточке" onClick={handleLikeClick}></button>
-                        <p className="element__like-counter">{props.likes}</p>
-                    </div>
+        <div className="element" >
+            <img
+                className="element__image"
+                onClick={handleCardClick} src={props.link} alt={props.name}
+            />
+            <button className={cardDeleteButtonClassName} type="button" aria-label="Удалить карточку" onClick={handleDeleteClick}></button>
+            <div className="element__mesto-container">
+                <h2 className="element__title">{props.name}</h2>
+                <div className="element__like-container">
+                    <button className={cardLikeButtonClassName} type="button" aria-label="Поставить Лайк карточке" onClick={handleLikeClick}></button>
+                    <p className="element__like-counter">{props.likes}</p>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 

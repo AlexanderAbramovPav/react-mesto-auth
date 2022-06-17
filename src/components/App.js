@@ -8,7 +8,7 @@ import EditAvatarPopup from './EditAvatarPopup';
 import React, { useState, useEffect } from 'react'
 import {apiSettings} from '../utils/api.js'
 import { CurrentUserContext} from '../context/CurrentUserContext';
-import Card from './Card';
+
 
 
 function App() {
@@ -127,24 +127,36 @@ function App() {
     });
   };
 
+  // Закрытие по escape
+
+  const isOpen = isEditAvatarPopupOpen || isEditProfilePopupOpen || isAddPlacePopupOpen || selectedCard
+
+  useEffect(() => {
+    function closeByEscape(evt) {
+      if(evt.key === 'Escape') {
+        closeAllPopups();
+      }
+    }
+    if(isOpen) {
+      document.addEventListener('keydown', closeByEscape);
+      return () => {
+        document.removeEventListener('keydown', closeByEscape);
+      }
+    }
+  }, [isOpen]) 
+
+
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <div className="page page_preload">
         <Header />
-        <Main onEditProfile={handleEditProfileClick} onAddPlace={handleAddPlaceClick} onEditAvatar={handleEditAvatarClick} onCardClick={setSelectedCard} onCardLike={handleCardLike} onCardDelete={handleCardDelete} userCards={userCards}/>
-        <section className="elements">
-          {userCards?.map((item) => (
-              <Card key={item._id} item={item} name={item.name} link={item.link} likes={item.likes.length} onCardClick={setSelectedCard} onCardLike={handleCardLike} onCardDelete={handleCardDelete} />
-          ))}
-        </section>
-
+        <Main onEditProfile={handleEditProfileClick} onAddPlace={handleAddPlaceClick} onEditAvatar={handleEditAvatarClick} onCardClick={setSelectedCard} onCardLike={handleCardLike} onCardDelete={handleCardDelete} userCards={userCards} />
         <Footer />
         <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateAvatar}/> 
         <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser}/> 
         <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit}/>
         <ImagePopup onClose={closeAllPopups} card={selectedCard} />
-
       </div>
     </CurrentUserContext.Provider>
   );
