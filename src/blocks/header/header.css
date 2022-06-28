@@ -6,6 +6,7 @@
   min-height: 74px;
   max-width: 880px;
   border-bottom: 1px solid rgb(84,84,84, 0.7);
+  justify-content: space-between;
 }
 
 @media screen and (max-width: 767px) {
