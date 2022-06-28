@@ -16,7 +16,7 @@ function SignForm(props) {
                     minLength="2"
                     maxLength="30"
                     id="email-input"
-                    // value={props.data?.email}
+                    value={props.data?.email || ''}
                     onChange={props.onChange}
                 />
                 <input 
@@ -28,7 +28,7 @@ function SignForm(props) {
                     minLength="2"
                     maxLength="30"
                     id="password-input"
-                    // value={props.data?.password}
+                    value={props.data?.password || ''}
                     onChange={props.onChange}
                 />
                 <button className='sign-form__submit-btn' aria-label="Подтвердить действие" type="submit" name="submit-button">{props.button}</button>

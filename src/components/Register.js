@@ -2,7 +2,7 @@ import React from 'react';
 import Header from './Header';
 import SignForm from './SignForm';
 import {withRouter} from 'react-router-dom';
-import useForm from './useForm';
+import useForm from '../hooks/useForm';
 
 function Register (props) {
 
