@@ -20,7 +20,7 @@ function Register (props) {
   return (
     <>
       <Header actionButton={"Вход"} onSignChange={props.onSignChange}/>
-      <SignForm title={"Регистрация"} button={"Зерегистрироваться"} registrationCheck={true} onSubmitSign={handleSubmit} onChange={useFormData.handleChange}/>
+      <SignForm title={"Регистрация"} button={"Зерегистрироваться"} registrationCheck={true} onSubmitSign={handleSubmit} onChange={useFormData.handleChange} data={useFormData.values}/>
     </>
   );
   
