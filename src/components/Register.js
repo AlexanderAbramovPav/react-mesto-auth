@@ -1,57 +1,26 @@
-import React, {useState} from 'react';
-import * as auth from './Auth.js';
+import React from 'react';
 import Header from './Header';
-import Footer from './Footer';
 import SignForm from './SignForm';
-import InfoTooltip from './InfoTooltip';
 import {withRouter} from 'react-router-dom';
-import okIcon from '../images/icon-ok.svg';
-import errorIcon from '../images/icon-error.svg';
+import useForm from './useForm';
 
 function Register (props) {
-  
-  const [registerData, setRegisterData] = useState({
-    email: '',
-    password: ''
-  })
 
-  function handleChange(e) {
-    const {name, value} = e.target;
-    setRegisterData({
-      ...registerData,
-      [name]: value 
-    });
-  }
+  const useFormData = useForm()
 
   function handleSubmit(e) {
     e.preventDefault()
-    auth.register(registerData.password, registerData.email).then((res) => {
-      if (res) {
-          props.onSubmitPopup({
-            icon: okIcon, 
-            tipTitle: "Вы успешно зарегистрировались!"
-          });
-          props.history.push('/sign-in');
-          setRegisterData({
-            email: '',
-            password: ''
-          })
-        } else {
-          props.onSubmitPopup({
-            icon: errorIcon,
-            tipTitle: "Что-то пошло не так! Попробуйте ещё раз."
-          })
-      }
-    });
+    props.onRegister(useFormData);
+    useFormData.setValues({
+      email: '',
+      password: ''
+    })
   }
-
 
   return (
     <>
       <Header actionButton={"Вход"} onSignChange={props.onSignChange}/>
-      <SignForm title={"Регистрация"} button={"Зерегистрироваться"} registrationCheck={true} onSubmitSign={handleSubmit} onChange={handleChange}/>
-      <Footer />
-      <InfoTooltip onClose={props.onClose}  isOpen={props.isOpen} selectedTooltip={props.selectedTooltip}/>
+      <SignForm title={"Регистрация"} button={"Зерегистрироваться"} registrationCheck={true} onSubmitSign={handleSubmit} onChange={useFormData.handleChange}/>
     </>
   );
   

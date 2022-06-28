@@ -1,7 +1,7 @@
 function ImagePopup(props) {
 
   return (
-    <div className={props.card ? `popup popup-img popup_opened` : `popup popup-img`} tabIndex={-1}>
+    <div className={props.card ? `popup popup-img popup_opened` : `popup popup-img`} onClick={props.onOutClick}>
       <div className="popup__img-container">
         <img
             src={props.card?.link} 

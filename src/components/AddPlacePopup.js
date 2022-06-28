@@ -31,7 +31,7 @@ function AddPlacePopup(props) {
     }, [props.isOpen]);
 
     return (
-        <PopupWithForm onClose={props.onClose} isOpen={props.isOpen} onSubmit={handleSubmit} name="add-card" title="Новое место" submit="Создать">
+        <PopupWithForm onClose={props.onClose} isOpen={props.isOpen} onSubmit={handleSubmit} name="add-card" title="Новое место" submit="Создать" onOutClick={props.onOutClick}>
             <label className="popup__field">
                 <input
                     type="text"

@@ -7,12 +7,15 @@ import EditProfilePopup from './EditProfilePopup';
 import EditAvatarPopup from './EditAvatarPopup';
 import React, { useState, useEffect } from 'react'
 import {apiSettings} from '../utils/api.js'
-import * as auth from './Auth.js';
+import * as auth from '../utils/Auth.js';
 import { CurrentUserContext} from '../context/CurrentUserContext';
 import { Route, Switch, Redirect, Link, withRouter, useHistory} from 'react-router-dom';
 import Login from './Login.js';
 import Register from './Register.js';
 import ProtectedRoute from './ProtectedRoute.js';
+import InfoTooltip from './InfoTooltip.js';
+import errorIcon from '../images/icon-error.svg';
+import okIcon from '../images/icon-ok.svg';
 
 
 
@@ -80,13 +83,14 @@ function App(props) {
   // Закрыть все попапы
 
   function closeAllPopups() {
-    Promise.all([setIsEditAvatarPopupOpen(false), setIsEditProfilePopupOpen(false), setIsAddPlacePopupOpen(false), setIsInfoTooltipOpen(false)])
-    .then(() => {
-      setTimeout(() => {
-        setSelectedCard(null);
-        setSelectedTooltip(null);
-      }, 200)
-    })
+    setIsEditAvatarPopupOpen(false);
+    setIsEditProfilePopupOpen(false);
+    setIsAddPlacePopupOpen(false);
+    setIsInfoTooltipOpen(false);
+    setTimeout(() => {
+      setSelectedCard(null);
+      setSelectedTooltip(null);
+    }, 200);
   };
 
 
@@ -139,72 +143,114 @@ function App(props) {
     });
   };
 
-  // Закрытие по escape
+  // Закрытие по escape и оверлею
 
   const isOpen = isEditAvatarPopupOpen || isEditProfilePopupOpen || isAddPlacePopupOpen || selectedCard || isInfoTooltipOpen
+ 
+  useEffect(() => {
+      if (!isOpen) return;
+        const closeByEscape = (e) => {
+          if (e.key === 'Escape') {
+            closeAllPopups();
+          }
+        }
+        document.addEventListener('keydown', closeByEscape)
+        return () => document.removeEventListener('keydown', closeByEscape)
+    }, [isOpen, closeAllPopups])
+
+  const handleOverlay = (e) => {
+    if (e.target === e.currentTarget) {
+      closeAllPopups();
+    }
+  }
+
+  // Тултипы
+
+  function handleSignSubmitPopup(selectedTooltip) {
+    setSelectedTooltip(selectedTooltip);
+    setIsInfoTooltipOpen(true)
+  };
+
+  // Выход
+
+  const history = useHistory();
+
+  function signOut(){
+    localStorage.removeItem('jwt');
+    setLoggedIn({
+      loggedIn: false})
+  }
+
+
+  // Login api
+
+  function handleLogin (useFormData) {
+    auth.authorize(useFormData.values.password, useFormData.values.email)
+    .then((res) => {
+      if (res) {
+          setLoggedIn({
+            loggedIn: true,
+            email: useFormData.values.email
+          })
+          history.push('/');
+        }
+    })
+    .catch((err) => {
+      console.log(err)
+      handleSignSubmitPopup({
+        icon: errorIcon,
+        tipTitle: "Что-то пошло не так! Попробуйте ещё раз."
+      })
+    });
+  }
+
+  function handleGetContent(){
+    if (localStorage.getItem('jwt')) {
+      const jwt = localStorage.getItem('jwt');
+      // проверяем токен пользователя
+      auth.checkToken(jwt)
+      .then((res) => {
+        if (res) {
+          setLoggedIn({
+            loggedIn: true,
+            email: res.data.email
+          })
+        }})
+      .then(()=> {
+          props.history.push("/")
+      })
+      .catch((err) => console.log(err));
+    }
+  }
 
   useEffect(() => {
-    function closeByEscape(evt) {
-      if(evt.key === 'Escape') {
-        closeAllPopups();
-      }
-    }
-    if(isOpen) {
-      document.addEventListener('keydown', closeByEscape);
-      return () => {
-        document.removeEventListener('keydown', closeByEscape);
-      }
-    }
-  }, [isOpen]) 
-
-    // Тултипы
-
-    function handleSignSubmitPopup(selectedTooltip) {
-      setSelectedTooltip(selectedTooltip);
-      setIsInfoTooltipOpen(true)
-    };
-
-    // Вход
-
-    function handleGetContent(){
-      if (localStorage.getItem('jwt')) {
-        const jwt = localStorage.getItem('jwt');
-        // проверяем токен пользователя
-        auth.getContent(jwt)
-        .then((res) => {
-          if (res) {
-            setLoggedIn({
-              loggedIn: true,
-              email: res.data.email
-            })
-          }})
-        .then(()=> {
-            props.history.push("/")
-        })
-      }
-    }
-
-    useEffect(() => {
-      handleGetContent()
-    }, []);
+    handleGetContent()
+  }, []);
 
 
-    function handleLogin(res) {
-      setLoggedIn({
-        loggedIn: true,
-        email: res
+    // Register api
+
+    function handleRegister (useFormData) {
+      auth.register(useFormData.values.password, useFormData.values.email)
+      .then((res) => {
+        if (res) {
+            handleSignSubmitPopup({
+              icon: okIcon, 
+              tipTitle: "Вы успешно зарегистрировались!"
+            });
+            history.push('/sign-in');
+          }
       })
+      .catch((err) => {
+        console.log(err)
+        handleSignSubmitPopup({
+          icon: errorIcon,
+          tipTitle: "Что-то пошло не так! Попробуйте ещё раз."
+        })
+      });
     }
 
-    // Выход
 
-    const history = useHistory();
-
-    function signOut(){
-      localStorage.removeItem('jwt');
-      setLoggedIn({
-        loggedIn: false})
-    }
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
@@ -216,22 +262,21 @@ function App(props) {
               <div className="page page_preload">
                 <Header actionButton={"Выйти"} onLogoutClick={signOut} onSignChange={'/sign-in'} loggedIn={loggedIn}/>
                 <Main onEditProfile={handleEditProfileClick} onAddPlace={handleAddPlaceClick} onEditAvatar={handleEditAvatarClick} onCardClick={setSelectedCard} onCardLike={handleCardLike} onCardDelete={handleCardDelete} userCards={userCards} />
-                <Footer />
-                <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateAvatar}/> 
-                <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser}/> 
-                <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit}/>
-                <ImagePopup onClose={closeAllPopups} card={selectedCard} />
+                <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateAvatar} onOutClick={handleOverlay}/> 
+                <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} onOutClick={handleOverlay}/> 
+                <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} onOutClick={handleOverlay}/>
+                <ImagePopup onClose={closeAllPopups} card={selectedCard} onOutClick={handleOverlay}/>
               </div>
             }
           /> 
           <Route path="/sign-in">
             <div className="loginContainer">
-              <Login onClose={closeAllPopups} isOpen={isInfoTooltipOpen} onSubmitPopup={handleSignSubmitPopup} selectedTooltip={selectedTooltip} onSignChange={'/sign-up'} onLogin={handleLogin}/>
+              <Login onClose={closeAllPopups} onSubmitPopup={handleSignSubmitPopup} onSignChange={'/sign-up'} onLogin={handleLogin}/>
             </div>
           </Route>
           <Route path="/sign-up">   
             <div className="registerContainer">
-              <Register onClose={closeAllPopups} isOpen={isInfoTooltipOpen} onSubmitPopup={handleSignSubmitPopup} selectedTooltip={selectedTooltip} onSignChange={'/sign-in'}/>
+              <Register onClose={closeAllPopups} onSubmitPopup={handleSignSubmitPopup} onSignChange={'/sign-in'} onRegister={handleRegister}/>
             </div>
           </Route>
           <Route exact path="/">
@@ -243,6 +288,8 @@ function App(props) {
             </div>
           </Route>
         </Switch>
+        <InfoTooltip onClose={closeAllPopups} isOpen={isInfoTooltipOpen} selectedTooltip={selectedTooltip} onOutClick={handleOverlay}/>
+        <Footer />
     </CurrentUserContext.Provider>
   );
 }
